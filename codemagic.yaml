@@ -48,6 +48,7 @@ workflows:
         distribution_type: development # Para teste gratuito
         bundle_identifier: com.giovanydj.dgpromoter
       vars:
+        APPLE_ID: giovanydj@email.com # SUBSTITUA pelo seu Apple ID
         BUNDLE_ID: "com.giovanydj.dgpromoter"
         XCODE_WORKSPACE: "ios/App/App.xcworkspace"
         XCODE_SCHEME: "App"
