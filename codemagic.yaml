@@ -1,0 +1,92 @@
+workflows:
+  ionic-capacitor-android-workflow:
+    name: DG Promoter Android Build
+    max_build_duration: 60
+    instance_type: mac_mini_m1
+    environment:
+      android_signing:
+        # Para build de release (opcional)
+      vars:
+        # Variáveis de ambiente
+        PACKAGE_NAME: "com.dgproducoes.promoter"
+      node: 18.17.0
+      npm: latest
+      java: 11
+    scripts:
+      - name: Install npm dependencies
+        script: |
+          npm install
+      - name: Build Ionic app
+        script: |
+          npm run build
+      - name: Update dependencies and copy web assets to native project
+        script: |
+          npx cap sync android
+      - name: Build Android
+        script: |
+          cd android
+          ./gradlew assembleDebug
+    artifacts:
+      - android/app/build/outputs/**/*.apk
+      - android/app/build/outputs/**/mapping.txt
+    publishing:
+      email:
+        recipients:
+          - giovanydj@email.com # Substitua pelo seu email
+        notify:
+          success: true
+          failure: true
+
+  ionic-capacitor-ios-workflow:
+    name: DG Promoter iOS Build
+    max_build_duration: 60
+    instance_type: mac_mini_m1
+    integrations:
+      app_store_connect: codemagic
+    environment:
+      ios_signing:
+        distribution_type: app_store # ou ad_hoc para testes
+        bundle_identifier: com.dgproducoes.promoter
+      vars:
+        BUNDLE_ID: "com.dgproducoes.promoter"
+        XCODE_WORKSPACE: "ios/App/App.xcworkspace"
+        XCODE_SCHEME: "App"
+      node: 18.17.0
+      npm: latest
+      xcode: 15.0
+      cocoapods: default
+    scripts:
+      - name: Install npm dependencies
+        script: |
+          npm install
+      - name: Build Ionic app
+        script: |
+          npm run build
+      - name: Update dependencies and copy web assets to native project
+        script: |
+          npx cap sync ios
+      - name: Set up code signing settings on Xcode project
+        script: |
+          xcode-project use-profiles
+      - name: Build ipa for distribution
+        script: |
+          xcode-project build-ipa \
+            --workspace "$XCODE_WORKSPACE" \
+            --scheme "$XCODE_SCHEME"
+    artifacts:
+      - build/ios/ipa/*.ipa
+      - /tmp/xcodebuild_logs/*.log
+      - $HOME/Library/Developer/Xcode/DerivedData/**/Build/**/*.app
+      - $HOME/Library/Developer/Xcode/DerivedData/**/Build/**/*.dSYM
+    publishing:
+      email:
+        recipients:
+          - giovanydj@email.com # Substitua pelo seu email
+        notify:
+          success: true
+          failure: true
+      app_store_connect:
+        auth: integration
+        # Se você tiver conta Apple Developer
+        # submit_to_testflight: false
+        # submit_to_app_store: false
