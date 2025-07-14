@@ -41,10 +41,10 @@ workflows:
     environment:
       ios_signing:
         distribution_type: development
-        bundle_identifier: com.giovanydj.dgpromoter
+        bundle_identifier: com.raianegoisbrandao.dgpromoter
       vars:
         APPLE_ID: raianegoisbrandao@gmail.com
-        BUNDLE_ID: "com.giovanydj.dgpromoter"
+        BUNDLE_ID: "com.raianegoisbrandao.dgpromoter"
         XCODE_WORKSPACE: "ios/App/App.xcworkspace"
         XCODE_SCHEME: "App"
       node: 18.17.0
