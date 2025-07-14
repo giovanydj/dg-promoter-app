@@ -1,0 +1,201 @@
+<ion-header [translucent]="true">
+  <ion-toolbar color="primary">
+    <ion-title>DG Promoter - Vendas</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true" class="ion-padding">
+  <ion-header collapse="condense">
+    <ion-toolbar>
+      <ion-title size="large">Vendas</ion-title>
+    </ion-toolbar>
+  </ion-header>
+
+  <!-- Card de Login do Promoter -->
+  <ion-card *ngIf="!isLoggedIn">
+    <ion-card-header>
+      <ion-card-title>Login do Promoter</ion-card-title>
+      <ion-card-subtitle>Entre com suas credenciais para começar a vender</ion-card-subtitle>
+    </ion-card-header>
+    <ion-card-content>
+      <ion-item>
+        <ion-label position="floating">Email</ion-label>
+        <ion-input [(ngModel)]="loginData.email" type="email"></ion-input>
+      </ion-item>
+      <ion-item>
+        <ion-label position="floating">Senha</ion-label>
+        <ion-input [(ngModel)]="loginData.password" type="password"></ion-input>
+      </ion-item>
+      <ion-button expand="block" (click)="login()" [disabled]="!loginData.email || !loginData.password">
+        <ion-icon name="log-in" slot="start"></ion-icon>
+        Entrar
+      </ion-button>
+    </ion-card-content>
+  </ion-card>
+
+  <!-- Interface de Vendas -->
+  <div *ngIf="isLoggedIn">
+    <!-- Header do Promoter -->
+    <ion-card>
+      <ion-card-content>
+        <div class="promoter-info">
+          <h2>Olá, {{promoterName}}!</h2>
+          <p>Vendas de hoje: R$ {{vendasHoje | number:'1.2-2'}}</p>
+        </div>
+        <ion-button fill="clear" (click)="logout()" slot="end">
+          <ion-icon name="log-out"></ion-icon>
+          Sair
+        </ion-button>
+      </ion-card-content>
+    </ion-card>
+
+    <!-- Seleção de Evento -->
+    <ion-card>
+      <ion-card-header>
+        <ion-card-title>Selecionar Evento</ion-card-title>
+      </ion-card-header>
+      <ion-card-content>
+        <ion-item>
+          <ion-label>Evento</ion-label>
+          <ion-select [(ngModel)]="eventoSelecionado" (selectionChange)="carregarLotes()">
+            <ion-select-option *ngFor="let evento of eventos" [value]="evento">
+              {{evento.titulo}} - {{evento.data_evento | date:'dd/MM/yyyy'}}
+            </ion-select-option>
+          </ion-select>
+        </ion-item>
+      </ion-card-content>
+    </ion-card>
+
+    <!-- Formulário de Venda -->
+    <ion-card *ngIf="eventoSelecionado">
+      <ion-card-header>
+        <ion-card-title>Nova Venda</ion-card-title>
+      </ion-card-header>
+      <ion-card-content>
+        <!-- Dados do Cliente -->
+        <ion-item>
+          <ion-label position="floating">Nome do Cliente</ion-label>
+          <ion-input [(ngModel)]="venda.cliente.nome" required></ion-input>
+        </ion-item>
+        
+        <ion-item>
+          <ion-label position="floating">CPF</ion-label>
+          <ion-input [(ngModel)]="venda.cliente.cpf" placeholder="000.000.000-00"></ion-input>
+        </ion-item>
+        
+        <ion-item>
+          <ion-label position="floating">Email</ion-label>
+          <ion-input [(ngModel)]="venda.cliente.email" type="email"></ion-input>
+        </ion-item>
+        
+        <ion-item>
+          <ion-label position="floating">Telefone</ion-label>
+          <ion-input [(ngModel)]="venda.cliente.telefone" placeholder="(00) 00000-0000"></ion-input>
+        </ion-item>
+
+        <!-- Tipo de Ingresso -->
+        <ion-item>
+          <ion-label>Tipo de Ingresso</ion-label>
+          <ion-select [(ngModel)]="venda.tipo" (selectionChange)="onTipoChange()">
+            <ion-select-option value="ingresso">Ingresso</ion-select-option>
+            <ion-select-option value="bistro">Mesa Bistro</ion-select-option>
+          </ion-select>
+        </ion-item>
+
+        <!-- Lotes de Ingresso -->
+        <ion-item *ngIf="venda.tipo === 'ingresso'">
+          <ion-label>Lote/Tipo</ion-label>
+          <ion-select [(ngModel)]="venda.lote" (selectionChange)="calcularTotal()">
+            <ion-select-option *ngFor="let lote of lotes" [value]="lote">
+              {{lote.nome}} - R$ {{lote.preco | number:'1.2-2'}}
+            </ion-select-option>
+          </ion-select>
+        </ion-item>
+
+        <!-- Mesas Bistro -->
+        <ion-item *ngIf="venda.tipo === 'bistro'">
+          <ion-label>Mesa Bistro</ion-label>
+          <ion-select [(ngModel)]="venda.mesa" (selectionChange)="calcularTotal()">
+            <ion-select-option *ngFor="let mesa of mesas" [value]="mesa">
+              Mesa {{mesa.numero}} - R$ {{mesa.preco | number:'1.2-2'}}
+            </ion-select-option>
+          </ion-select>
+        </ion-item>
+
+        <!-- Quantidade -->
+        <ion-item>
+          <ion-label>Quantidade</ion-label>
+          <ion-input 
+            type="number" 
+            [(ngModel)]="venda.quantidade" 
+            min="1" 
+            max="10"
+            (ionInput)="calcularTotal()">
+          </ion-input>
+        </ion-item>
+
+        <!-- Total -->
+        <ion-item>
+          <ion-label>
+            <h2>Total: R$ {{venda.valorTotal | number:'1.2-2'}}</h2>
+          </ion-label>
+        </ion-item>
+
+        <!-- Forma de Pagamento -->
+        <ion-item>
+          <ion-label>Forma de Pagamento</ion-label>
+          <ion-select [(ngModel)]="venda.formaPagamento">
+            <ion-select-option value="dinheiro">Dinheiro</ion-select-option>
+            <ion-select-option value="pix">PIX</ion-select-option>
+            <ion-select-option value="cartao_credito">Cartão de Crédito</ion-select-option>
+            <ion-select-option value="cartao_debito">Cartão de Débito</ion-select-option>
+          </ion-select>
+        </ion-item>
+
+        <!-- Botões -->
+        <div class="ion-margin-top">
+          <ion-button 
+            expand="block" 
+            (click)="processarVenda()" 
+            [disabled]="!isVendaValida()"
+            color="success">
+            <ion-icon name="card" slot="start"></ion-icon>
+            Confirmar Venda
+          </ion-button>
+          
+          <ion-button 
+            expand="block" 
+            fill="outline" 
+            (click)="limparFormulario()">
+            <ion-icon name="refresh" slot="start"></ion-icon>
+            Limpar
+          </ion-button>
+        </div>
+      </ion-card-content>
+    </ion-card>
+
+    <!-- Vendas Recentes -->
+    <ion-card *ngIf="vendasRecentes.length > 0">
+      <ion-card-header>
+        <ion-card-title>Vendas Recentes</ion-card-title>
+      </ion-card-header>
+      <ion-card-content>
+        <ion-list>
+          <ion-item *ngFor="let vendaRecente of vendasRecentes">
+            <ion-label>
+              <h3>{{vendaRecente.cliente_nome}}</h3>
+              <p>{{vendaRecente.item_nome}} - R$ {{vendaRecente.valor | number:'1.2-2'}}</p>
+              <p>{{vendaRecente.data_pedido | date:'dd/MM/yyyy HH:mm'}}</p>
+            </ion-label>
+            <ion-button 
+              fill="clear" 
+              slot="end"
+              (click)="imprimirVenda(vendaRecente)">
+              <ion-icon name="print"></ion-icon>
+            </ion-button>
+          </ion-item>
+        </ion-list>
+      </ion-card-content>
+    </ion-card>
+  </div>
+</ion-content>

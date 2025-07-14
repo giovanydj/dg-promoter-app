@@ -1,0 +1,189 @@
+<ion-header [translucent]="true">
+  <ion-toolbar color="primary">
+    <ion-title>DG Promoter - Impressão</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true" class="ion-padding">
+  <ion-header collapse="condense">
+    <ion-toolbar>
+      <ion-title size="large">Impressão</ion-title>
+    </ion-toolbar>
+  </ion-header>
+
+  <!-- Estado da Impressora -->
+  <ion-card>
+    <ion-card-header>
+      <ion-card-title>Status da Impressora</ion-card-title>
+    </ion-card-header>
+    <ion-card-content>
+      <div class="printer-status">
+        <ion-chip [color]="printerConnected ? 'success' : 'danger'">
+          <ion-icon [name]="printerConnected ? 'bluetooth' : 'bluetooth-outline'"></ion-icon>
+          <ion-label>{{printerConnected ? 'Conectada' : 'Desconectada'}}</ion-label>
+        </ion-chip>
+        <p *ngIf="printerName">Impressora: {{printerName}}</p>
+      </div>
+      
+      <!-- Botões de Conexão -->
+      <div class="ion-margin-top">
+        <ion-button 
+          expand="block" 
+          (click)="conectarImpressora()" 
+          [disabled]="printerConnected"
+          color="primary">
+          <ion-icon name="bluetooth" slot="start"></ion-icon>
+          Conectar Impressora
+        </ion-button>
+        
+        <ion-button 
+          expand="block" 
+          fill="outline" 
+          (click)="desconectarImpressora()" 
+          [disabled]="!printerConnected"
+          color="medium">
+          <ion-icon name="close-circle" slot="start"></ion-icon>
+          Desconectar
+        </ion-button>
+      </div>
+    </ion-card-content>
+  </ion-card>
+
+  <!-- Teste de Impressão -->
+  <ion-card>
+    <ion-card-header>
+      <ion-card-title>Teste de Impressão</ion-card-title>
+    </ion-card-header>
+    <ion-card-content>
+      <ion-button 
+        expand="block" 
+        (click)="imprimirTeste()" 
+        [disabled]="!printerConnected"
+        color="secondary">
+        <ion-icon name="document-text" slot="start"></ion-icon>
+        Imprimir Teste
+      </ion-button>
+    </ion-card-content>
+  </ion-card>
+
+  <!-- Impressão de Ingressos -->
+  <ion-card *ngIf="ticketsParaImprimir.length > 0">
+    <ion-card-header>
+      <ion-card-title>Ingressos para Imprimir</ion-card-title>
+      <ion-card-subtitle>{{ticketsParaImprimir.length}} ingresso(s) pendente(s)</ion-card-subtitle>
+    </ion-card-header>
+    <ion-card-content>
+      <ion-list>
+        <ion-item *ngFor="let ticket of ticketsParaImprimir; let i = index">
+          <ion-label>
+            <h3>{{ticket.cliente_nome}}</h3>
+            <p>{{ticket.item_nome || 'Mesa ' + ticket.numero}} - R$ {{ticket.valor | number:'1.2-2'}}</p>
+            <p>Ref: {{ticket.referencia}}</p>
+          </ion-label>
+          <ion-button 
+            fill="clear" 
+            (click)="imprimirTicket(ticket)" 
+            [disabled]="!printerConnected">
+            <ion-icon name="print"></ion-icon>
+          </ion-button>
+        </ion-item>
+      </ion-list>
+      
+      <div class="ion-margin-top">
+        <ion-button 
+          expand="block" 
+          (click)="imprimirTodos()" 
+          [disabled]="!printerConnected"
+          color="success">
+          <ion-icon name="print" slot="start"></ion-icon>
+          Imprimir Todos
+        </ion-button>
+        
+        <ion-button 
+          expand="block" 
+          fill="outline" 
+          (click)="limparLista()">
+          <ion-icon name="trash" slot="start"></ion-icon>
+          Limpar Lista
+        </ion-button>
+      </div>
+    </ion-card-content>
+  </ion-card>
+
+  <!-- Buscar Ingresso por ID/Referência -->
+  <ion-card>
+    <ion-card-header>
+      <ion-card-title>Buscar Ingresso</ion-card-title>
+    </ion-card-header>
+    <ion-card-content>
+      <ion-item>
+        <ion-label position="floating">ID do Pedido ou Referência</ion-label>
+        <ion-input [(ngModel)]="buscaId" placeholder="Ex: 123 ou REF-001"></ion-input>
+      </ion-item>
+      
+      <ion-button 
+        expand="block" 
+        (click)="buscarIngresso()" 
+        [disabled]="!buscaId"
+        class="ion-margin-top">
+        <ion-icon name="search" slot="start"></ion-icon>
+        Buscar e Imprimir
+      </ion-button>
+    </ion-card-content>
+  </ion-card>
+
+  <!-- Configurações de Impressão -->
+  <ion-card>
+    <ion-card-header>
+      <ion-card-title>Configurações</ion-card-title>
+    </ion-card-header>
+    <ion-card-content>
+      <ion-item>
+        <ion-label>Incluir QR Code</ion-label>
+        <ion-toggle [(ngModel)]="incluirQRCode"></ion-toggle>
+      </ion-item>
+      
+      <ion-item>
+        <ion-label>Incluir Código de Barras</ion-label>
+        <ion-toggle [(ngModel)]="incluirCodigoBarras"></ion-toggle>
+      </ion-item>
+      
+      <ion-item>
+        <ion-label>Corte Automático</ion-label>
+        <ion-toggle [(ngModel)]="corteAutomatico"></ion-toggle>
+      </ion-item>
+    </ion-card-content>
+  </ion-card>
+
+  <!-- Log de Impressões -->
+  <ion-card *ngIf="logImpressoes.length > 0">
+    <ion-card-header>
+      <ion-card-title>Log de Impressões</ion-card-title>
+    </ion-card-header>
+    <ion-card-content>
+      <ion-list>
+        <ion-item *ngFor="let log of logImpressoes.slice(0, 5)">
+          <ion-label>
+            <h3>{{log.cliente_nome}}</h3>
+            <p>{{log.timestamp | date:'dd/MM/yyyy HH:mm:ss'}}</p>
+            <p [style.color]="log.sucesso ? 'green' : 'red'">
+              {{log.sucesso ? 'Sucesso' : 'Falha'}}
+            </p>
+          </ion-label>
+          <ion-icon 
+            [name]="log.sucesso ? 'checkmark-circle' : 'close-circle'"
+            [color]="log.sucesso ? 'success' : 'danger'"
+            slot="end">
+          </ion-icon>
+        </ion-item>
+      </ion-list>
+      
+      <ion-button 
+        expand="block" 
+        fill="clear" 
+        (click)="limparLog()">
+        Limpar Log
+      </ion-button>
+    </ion-card-content>
+  </ion-card>
+</ion-content>
