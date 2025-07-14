@@ -45,7 +45,7 @@ workflows:
       app_store_connect: codemagic
     environment:
       ios_signing:
-        distribution_type: app_store # ou ad_hoc para testes
+        distribution_type: development # Para teste gratuito
         bundle_identifier: com.dgproducoes.promoter
       vars:
         BUNDLE_ID: "com.dgproducoes.promoter"
@@ -85,8 +85,6 @@ workflows:
         notify:
           success: true
           failure: true
-      app_store_connect:
-        auth: integration
-        # Se você tiver conta Apple Developer
-        # submit_to_testflight: false
-        # submit_to_app_store: false
+      # app_store_connect:
+        # auth: integration
+        # Para teste gratuito, não precisa do App Store Connect
