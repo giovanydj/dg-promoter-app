@@ -4,11 +4,8 @@ workflows:
     max_build_duration: 60
     instance_type: mac_mini_m1
     environment:
-      android_signing:
-        # Para build de release (opcional)
       vars:
-        # Variáveis de ambiente
-        PACKAGE_NAME: "com.dgproducoes.promoter"
+        PACKAGE_NAME: "com.giovanydj.dgpromoter"
       node: 18.17.0
       npm: latest
       java: 11
@@ -32,7 +29,7 @@ workflows:
     publishing:
       email:
         recipients:
-          - giovanydj@email.com # Substitua pelo seu email
+          - raianegoisbrandao@gmail.com
         notify:
           success: true
           failure: true
@@ -41,14 +38,12 @@ workflows:
     name: DG Promoter iOS Build
     max_build_duration: 60
     instance_type: mac_mini_m1
-    integrations:
-      app_store_connect: codemagic
     environment:
       ios_signing:
-        distribution_type: development # Para teste gratuito
+        distribution_type: development
         bundle_identifier: com.giovanydj.dgpromoter
       vars:
-        APPLE_ID: giovanydj@email.com # SUBSTITUA pelo seu Apple ID
+        APPLE_ID: raianegoisbrandao@gmail.com
         BUNDLE_ID: "com.giovanydj.dgpromoter"
         XCODE_WORKSPACE: "ios/App/App.xcworkspace"
         XCODE_SCHEME: "App"
@@ -82,10 +77,7 @@ workflows:
     publishing:
       email:
         recipients:
-          - giovanydj@email.com # Substitua pelo seu email
+          - raianegoisbrandao@gmail.com
         notify:
           success: true
           failure: true
-      # app_store_connect:
-        # auth: integration
-        # Para teste gratuito, não precisa do App Store Connect
