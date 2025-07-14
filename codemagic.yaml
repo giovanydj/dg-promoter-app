@@ -46,9 +46,9 @@ workflows:
     environment:
       ios_signing:
         distribution_type: development # Para teste gratuito
-        bundle_identifier: com.dgproducoes.promoter
+        bundle_identifier: com.giovanydj.dgpromoter
       vars:
-        BUNDLE_ID: "com.dgproducoes.promoter"
+        BUNDLE_ID: "com.giovanydj.dgpromoter"
         XCODE_WORKSPACE: "ios/App/App.xcworkspace"
         XCODE_SCHEME: "App"
       node: 18.17.0
